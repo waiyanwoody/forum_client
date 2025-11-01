@@ -1,3 +1,4 @@
+// type of error JSON response from backend 
 export type ApiErrorResponse = {
   timestamp?: string;
   status: number;
@@ -18,6 +19,7 @@ export class ApiHttpError extends Error {
   }
 }
 
+// This prevents from crashing if the backend doesn’t return JSON.
 export async function parseOrFallback(res: Response) {
   try {
     return await res.json();

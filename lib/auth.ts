@@ -78,7 +78,9 @@ export const loginUser = async (
 
   if (!response.ok) {
     const data = (await parseOrFallback(response)) as ApiErrorResponse | null;
+    // If the API returns a proper JSON error → ApiHttpError is thrown.
     if (data && typeof data.status === "number") throw new ApiHttpError(data);
+    // If it returns plain text or no body → a normal Error is thrown.
     throw new Error(`Login failed (${response.status})`);
   }
 

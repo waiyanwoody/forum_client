@@ -1,4 +1,5 @@
 import { User } from "../auth";
+import { ApiErrorResponse, ApiHttpError, parseOrFallback } from "../http";
 import { api } from "./client";
 
 export interface ProfileRequest {
@@ -19,12 +20,26 @@ export const updateProfile = async (data: ProfileRequest): Promise<User> => {
     // image upload
     if (data.avatar) formData.append("avatar", data.avatar);
     
-    console.log("FormData entries:",formData);
-  const response = await api.put("/api/profile/with-avatar", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
+    try {
+      const response = await api.put("/api/profile/with-avatar", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
-  return response.data; // returns your profile response DTO
+      return response.data; //  success
+    } catch (error: any) {
+      const data = error.response.data;
+      //  Handle backend errors gracefully
+      if (error.response) {
+        if (data && typeof data.status === "number") {
+          throw new ApiHttpError(data);
+        }
+        // fallback if backend response isn’t in expected format
+        throw new Error(`Request failed (${error.response.status})`);
+      }
+
+      // network or unexpected error
+      throw new Error("Network error or server unreachable");
+    }
 };

@@ -15,11 +15,9 @@ import { AvatarUpload } from "@/components/avatar-upload"
 import { useAuth } from "@/contexts/auth-context"
 import { getUserAvatar } from "@/lib/utils"
 import { useUpdateProfile } from "@/hooks/use-profile"
-import { useToast } from "@/hooks/use-toast"
 
 export function SettingsForm() {
   const { user } = useAuth();
-  const { toast } = useToast()
   const [fullname, setFullName] = useState("")
   const [username, setUsername] = useState("")
   const [email, setEmail] = useState("")
@@ -62,20 +60,20 @@ export function SettingsForm() {
     }
   }, [user]);
 
-  const { mutate: updateProfile, isPending, isSuccess } = useUpdateProfile()
+
+
+  const { mutate: updateProfile, isPending, isSuccess, error } = useUpdateProfile()
   
+
   useEffect(() => {
     if (isSuccess) {
-      toast({
-        title: `Profile Updated`,
-        description: "Your profile has been successfully updated.",
-      });
       setHasChanges(false);
       setAvatar(null);
       setUsernameAvailable(null)
     }
-  }, [isSuccess, toast]);
+  }, [isSuccess]);
 
+  // save profile update
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault()
     if (!hasChanges) {

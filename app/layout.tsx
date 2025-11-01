@@ -5,7 +5,7 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/contexts/auth-context"
 import QueryProvider from "./providers/query-provider"
-import { Toaster } from "@/components/ui/toaster"
+import { Toaster } from "react-hot-toast";
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -27,7 +27,7 @@ export default function RootLayout({
             <AuthProvider>
             <QueryProvider>
               {children}
-              <Toaster />
+              <Toaster position="bottom-right" reverseOrder={false} />
             </QueryProvider>
             </AuthProvider>
         </ThemeProvider>

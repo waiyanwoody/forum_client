@@ -19,7 +19,9 @@ export const updateProfile = async (data: ProfileRequest): Promise<User> => {
 
     // image upload
     if (data.avatar) formData.append("avatar", data.avatar);
-    
+  
+    console.log("the size of image:" ,data?.avatar?.size)
+  
     try {
       const response = await api.put("/api/profile/with-avatar", formData, {
         headers: {

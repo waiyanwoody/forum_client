@@ -7,21 +7,30 @@ import { PostCard } from "@/components/post-card"
 import { mockPosts } from "@/lib/mock-data"
 import { Loader2, TrendingUp, CheckCircle2, Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useFetchPosts } from "@/hooks/use-fetch-post"
+import { ProtectedRoute } from "@/components/protected-route"
 
 type FilterTab = "all" | "trending" | "solved" | "following"
 
 export default function HomePage() {
-  const [posts, setPosts] = useState(mockPosts.slice(0, 10))
+
+const {
+  data:posts,
+  fetchNextPage,
+  hasNextPage,
+  isFetchingNextPage,
+  isisFetchingNextPage,
+  isError,
+} = useFetchPosts(10);
+  
   const [page, setPage] = useState(1)
-  const [loading, setLoading] = useState(false)
-  const [hasMore, setHasMore] = useState(true)
   const [activeFilter, setActiveFilter] = useState<FilterTab>("all")
   const observerTarget = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore && !loading) {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
           loadMorePosts()
         }
       },
@@ -33,36 +42,20 @@ export default function HomePage() {
     }
 
     return () => observer.disconnect()
-  }, [hasMore, loading, page])
+  }, [hasNextPage, isFetchingNextPage, page])
 
   const loadMorePosts = () => {
-    setLoading(true)
-    // Simulate API call
-    setTimeout(() => {
-      const nextPage = page + 1
-      const startIndex = nextPage * 10
-      const endIndex = startIndex + 10
-      const newPosts = mockPosts.slice(startIndex, endIndex)
-
-      if (newPosts.length === 0) {
-        setHasMore(false)
-      } else {
-        setPosts((prev) => [...prev, ...newPosts])
-        setPage(nextPage)
-      }
-      setLoading(false)
-    }, 1000)
+    console.log('loadMorePosts called')
+    if (hasNextPage) fetchNextPage();
   }
 
   const handleFilterChange = (filter: FilterTab) => {
     setActiveFilter(filter)
     // Reset posts and pagination when filter changes
-    setPosts(mockPosts.slice(0, 10))
-    setPage(1)
-    setHasMore(true)
   }
 
   return (
+    <ProtectedRoute>
     <AppShell sidebar={<Sidebar />}>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
@@ -124,28 +117,31 @@ export default function HomePage() {
         </div>
 
         <div className="space-y-4">
-          {posts.map((post) => (
-            <PostCard key={post.id} post={post} />
-          ))}
+        {posts?.pages.map((page, pageIndex) =>
+          page.content.map(post => (
+            <PostCard key={`${pageIndex}-${post.id}`} post={post} />
+          ))
+        )}
         </div>
 
-        {hasMore && (
+        {hasNextPage && (
           <div ref={observerTarget} className="flex justify-center py-8">
-            {loading && (
+            {isFetchingNextPage && (
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Loader2 className="h-5 w-5 animate-spin" />
-                <span>Loading more posts...</span>
+                <span>loading more posts...</span>
               </div>
             )}
           </div>
         )}
 
-        {!hasMore && posts.length > 0 && (
+        {!hasNextPage && posts && posts.pages.length > 0 && (
           <div className="text-center py-8 text-muted-foreground">
             <p>You've reached the end!</p>
           </div>
         )}
       </div>
-    </AppShell>
+      </AppShell>
+      </ProtectedRoute>
   )
 }

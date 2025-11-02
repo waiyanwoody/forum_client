@@ -16,6 +16,8 @@ export interface User {
   bio?: string;
   reputation?: number;
   posts?: PostSummary[];
+  followed?: boolean;
+  isFriend: boolean;
 }
 
 export interface AuthResponse {

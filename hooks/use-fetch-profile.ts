@@ -7,11 +7,10 @@ import {
 } from "@/lib/api/profile";
 import { ApiHttpError } from "@/lib/http";
 import { toast } from "react-hot-toast";
-import type { User } from "@/lib/auth";
-import { Post, ProfileStatus, UserPostsResponse } from "@/lib/types";
+import { Post, ProfileStatus, UserPostsResponse, UserProfile } from "@/lib/types";
 
 export type ProfileWithPosts = {
-  profile: User | null;
+  profile: UserProfile | null;
   posts: Post[] | null;
   status: ProfileStatus | null;
   loading: {
@@ -23,7 +22,7 @@ export type ProfileWithPosts = {
 
 export const useFetchProfile = (username: string) => {
   // 1️. Fetch profile by username
-  const profileQuery = useQuery<User, ApiHttpError>({
+  const profileQuery = useQuery<UserProfile, ApiHttpError>({
     queryKey: ["profile", username],
     queryFn: () => getProfileByUsername(username),
     enabled: !!username,

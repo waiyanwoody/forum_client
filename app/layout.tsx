@@ -29,7 +29,7 @@ export default function RootLayout({
             <QueryProvider>
               {children}
               <Toaster position="bottom-right" reverseOrder={false} />
-              {/* <ReactQueryDevtools initialIsOpen={false} /> */}
+              <ReactQueryDevtools initialIsOpen={false} />
             </QueryProvider>
             </AuthProvider>
         </ThemeProvider>

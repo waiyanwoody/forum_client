@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Calendar, Settings } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -8,18 +8,18 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { format } from "date-fns"
-import { User } from "@/lib/auth"
 import { getUserAvatar } from "@/lib/utils"
-import { ProfileStatus } from "@/lib/types"
+import { ProfileStatus, UserProfile as UserProfileModel } from "@/lib/types"
+import FollowButton from "./follow-button"
 
 type UserProfileProps = {
-  user: User | null
+  user: UserProfileModel | null
   isCurrentUser: boolean 
   stats: ProfileStatus | null
 }
 
 export function UserProfile({ user,isCurrentUser,stats }: UserProfileProps) {
-  const [isFollowing, setIsFollowing] = useState(false)
+
   const avatarUrl = getUserAvatar(user?.avatar_path);
 
   if (user === null) {
@@ -44,15 +44,9 @@ export function UserProfile({ user,isCurrentUser,stats }: UserProfileProps) {
                 <p className="text-muted-foreground">@{user.username}</p>
               </div>
 
-              <div className="flex gap-2">
-                { !isCurrentUser ?  <Button
-                  variant={isFollowing ? "outline" : "default"}
-                  size="sm"
-                  onClick={() => setIsFollowing(!isFollowing)}
-                >
-                  {isFollowing ? "Following" : "Follow"}
-                </Button> : 
-                  <Button variant="outline" size="sm" asChild>
+              <div className="flex gap-2 ">
+                {!isCurrentUser ? <FollowButton userId={Number(user.id)} followed={user.followed} friend={user.isFriend} /> : 
+                  <Button className="cursor-pointer" variant="outline" size="sm" asChild>
                   <Link href="/settings">
                     <Settings className="h-4 w-4" />
                   </Link>

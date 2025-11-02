@@ -13,6 +13,7 @@ export type Post = {
   createdAt: string;
   lastActivityAt: string;
   likeCount: number;
+  liked: boolean;
   commentCount: number;
   isSaved: boolean;
   isPinned?: boolean;
@@ -27,6 +28,19 @@ export type PostSummary = {
   likeCount: number;
   commentCount: number;
 };
+
+export interface UserProfile {
+  id: string | number;
+  fullname: string;
+  username: string;
+  email: string;
+  email_verified: boolean;
+  bio?: string;
+  avatar_path?: string;
+  createdAt?: string;
+  followed?: boolean;
+  isFriend: boolean;
+}
 
 export type UserSummary = {
   id: number;
@@ -47,6 +61,38 @@ export type ProfileStatus = {
   followerCount: number;
   postCount: number;
   postLikeCount: number;
+}
+
+// Generic pagination type for any entity
+export interface Pageable {
+  pageNumber: number;
+  pageSize: number;
+  sort: {
+    empty: boolean;
+    sorted: boolean;
+    unsorted: boolean;
+  };
+  offset: number;
+  paged: boolean;
+  unpaged: boolean;
+}
+
+export interface PaginatedResponse<T> {
+  content: T[];
+  pageable: Pageable;
+  last: boolean;
+  totalPages: number;
+  totalElements: number;
+  size: number;
+  number: number;
+  sort: {
+    empty: boolean;
+    sorted: boolean;
+    unsorted: boolean;
+  };
+  first: boolean;
+  numberOfElements: number;
+  empty: boolean;
 }
 
 export type Comment = {

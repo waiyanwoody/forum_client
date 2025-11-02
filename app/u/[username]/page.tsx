@@ -8,6 +8,6 @@ type UserPageProps = {
 
 export default async function UserPage({ params }: UserPageProps) {
   const { username } = await params;
-  // ✅ Server Component — just pass params
+  // Server Component — just pass params
   return <UserPageClient username={username} />;
 }

@@ -18,6 +18,9 @@ export function PostCard({ post }: PostCardProps) {
   const timeAgo = formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })
   const avatarUrl = getUserAvatar(post?.author.avatar_path);
 
+  console.log('post', post)
+  console.log("avatarUrl", post.author.avatar_path)
+
   return (
     <article className="group relative bg-card border border-border rounded-lg p-6 hover:border-primary/50 transition-all">
       {/* Pinned indicator */}
@@ -65,9 +68,9 @@ export function PostCard({ post }: PostCardProps) {
 
           {/* Tags */}
           <div className="flex flex-wrap gap-2">
-            {post.tags?.map((tag) => (
-              <Badge key={tag} variant="secondary" className="text-xs">
-                {tag}
+            {post.tags?.map((tag, index) => (
+              <Badge key={`${tag}-${index}`} variant="secondary" className="text-xs">
+              {tag}
               </Badge>
             ))}
           </div>
@@ -88,7 +91,7 @@ export function PostCard({ post }: PostCardProps) {
             className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
           >
             <MessageSquare className="h-4 w-4" />
-            <span className="text-sm font-medium">{post.replyCount}</span>
+            <span className="text-sm font-medium">{post.commentCount}</span>
           </Link>
         </div>
       </div>

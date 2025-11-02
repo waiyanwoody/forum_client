@@ -1,6 +1,5 @@
-import { User } from "../auth";
 import { ApiErrorResponse, ApiHttpError, parseOrFallback } from "../http";
-import { Post, ProfileStatus, UserPostsResponse } from "../types";
+import { Post, ProfileStatus, User, UserPostsResponse, UserProfile } from "../types";
 import { api } from "./client";
 
 export interface ProfileRequest {
@@ -10,7 +9,7 @@ export interface ProfileRequest {
   avatar?: File | null;
 }
 
-export const getProfileByUsername = async (username: string): Promise<User> => {
+export const getProfileByUsername = async (username: string): Promise<UserProfile> => {
   try {
     const response = await api.get(`/api/profile/${username}`);
     return response.data; // success

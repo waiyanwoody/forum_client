@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { X, Bold, Italic, Code, LinkIcon, ImageIcon, Eye, Edit } from "lucide-react"
 import { MarkdownRenderer } from "./markdown-renderer"
+import { useCreatePost } from "@/hooks/use-create-post"
 
 type ThreadFormProps = {
   initialData?: {
@@ -88,10 +89,28 @@ export function ThreadForm({ initialData, isEditing = false }: ThreadFormProps) 
     }, 0)
   }
 
+  const createPost = useCreatePost();
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("[v0] Thread submitted:", { title, content, tags })
-    router.push("/")
+    const newPost = {
+      title: title,
+      content: content,
+      tags: tags,
+    };
+    createPost.mutate(newPost, {
+      onSuccess: () => {
+        clearForm();
+      }
+    });
+  }
+
+  const clearForm = () => {
+    setTitle("")
+    setContent("")
+    setTags([])
+    setTagInput("")
+    setPreviewMode("write")
   }
 
   return (
@@ -242,8 +261,8 @@ export function ThreadForm({ initialData, isEditing = false }: ThreadFormProps) 
         <Button type="button" variant="outline" onClick={() => router.back()}>
           Cancel
         </Button>
-        <Button type="submit" disabled={!title.trim() || !content.trim() || tags.length === 0}>
-          {isEditing ? "Update Thread" : "Publish Thread"}
+        <Button type="submit" disabled={!title.trim() || !content.trim() || tags.length === 0 || createPost.isPending}>
+          {createPost.isPending ? "Creating..." : isEditing ? "Update Thread" : "Publish Thread"}
         </Button>
       </div>
     </form>

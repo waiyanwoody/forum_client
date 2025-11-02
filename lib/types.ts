@@ -1,18 +1,52 @@
 export type Post = {
-  id: string
-  title: string
-  slug: string
-  excerpt: string
-  contentMD: string
-  tags: string[]
-  author: User
-  createdAt: string
-  lastActivityAt: string
-  likeCount: number
-  replyCount: number
-  isSaved: boolean
-  isPinned?: boolean
-  isSolved?: boolean
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  contentMD: string;
+  tags: string[];
+  author: {
+    id: string;
+    username: string;
+    avatar_path: string;
+  };
+  createdAt: string;
+  lastActivityAt: string;
+  likeCount: number;
+  commentCount: number;
+  isSaved: boolean;
+  isPinned?: boolean;
+  isSolved?: boolean;
+};
+
+export type PostSummary = {
+  id: number;
+  title: string;
+  excerpt: string;
+  createdAt: string;
+  likeCount: number;
+  commentCount: number;
+};
+
+export type UserSummary = {
+  id: number;
+  username: string;
+  avatar_path: string;
+};
+
+export type UserPostsResponse = {
+  author: UserSummary;
+  posts: PostSummary[];
+  page: number;
+  pageSize: number;
+  totalPosts: number;
+};
+
+export type ProfileStatus = {
+  followingCount: number,
+  followerCount: number;
+  postCount: number;
+  postLikeCount: number;
 }
 
 export type Comment = {

@@ -14,7 +14,8 @@ import { Save, Eye, EyeOff, Loader2, CheckCircle2, Check, X } from "lucide-react
 import { AvatarUpload } from "@/components/avatar-upload"
 import { useAuth } from "@/contexts/auth-context"
 import { getUserAvatar } from "@/lib/utils"
-import { useUpdateProfile } from "@/hooks/use-profile"
+import { useUpdateProfile } from "@/hooks/use-update-profile"
+import { ProtectedRoute } from "./protected-route"
 
 export function SettingsForm() {
   const { user } = useAuth();
@@ -144,7 +145,8 @@ export function SettingsForm() {
   const avatarUrl = getUserAvatar(user?.avatar_path);
 
   return (
-    <Tabs defaultValue="profile" className="space-y-6">
+    <ProtectedRoute>
+      <Tabs defaultValue="profile" className="space-y-6">
       <TabsList className="bg-muted">
         <TabsTrigger value="profile">Profile</TabsTrigger>
         <TabsTrigger value="account">Account</TabsTrigger>
@@ -486,5 +488,6 @@ export function SettingsForm() {
         </Card>
       </TabsContent>
     </Tabs>
+    </ProtectedRoute>
   )
 }

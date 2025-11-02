@@ -1,30 +1,13 @@
-import { AppShell } from "@/components/app-shell"
-import { UserProfile } from "@/components/user-profile"
-import { UserActivity } from "@/components/user-activity"
-import { mockUsers, mockPosts, mockUserReplies, mockLikedPosts, mockSavedPosts } from "@/lib/mock-data"
+// app/u/[username]/page.tsx
+
+import UserPageClient from "./UserPageClient";
 
 type UserPageProps = {
-  params: {
-    username: string
-  }
-}
+  params: Promise<{ username: string }>;
+};
 
-export default function UserPage({ params }: UserPageProps) {
-  // In a real app, fetch user by username
-  const user = mockUsers[0]
-  const userPosts = mockPosts.filter((post) => post.author.id === user.id)
-
-  return (
-    <AppShell showSidebar={false}>
-      <div className="max-w-4xl mx-auto space-y-6">
-        <UserProfile user={user} />
-        <UserActivity
-          posts={userPosts}
-          replies={mockUserReplies}
-          likedPosts={mockLikedPosts}
-          savedPosts={mockSavedPosts}
-        />
-      </div>
-    </AppShell>
-  )
+export default async function UserPage({ params }: UserPageProps) {
+  const { username } = await params;
+  // ✅ Server Component — just pass params
+  return <UserPageClient username={username} />;
 }

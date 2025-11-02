@@ -1,6 +1,7 @@
 "use client";
 
 import { ApiErrorResponse, ApiHttpError, parseOrFallback } from "./http";
+import { PostSummary } from "./types";
 
 export interface User {
   id: string | number;
@@ -14,6 +15,7 @@ export interface User {
   avatar_path?: string;
   bio?: string;
   reputation?: number;
+  posts?: PostSummary[];
 }
 
 export interface AuthResponse {

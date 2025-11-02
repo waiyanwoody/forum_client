@@ -16,7 +16,7 @@ interface AuthContextType {
   checkUsernameAvailable: (username: string) => Promise<{ valid: boolean; available: boolean; message: string | undefined; }>
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)

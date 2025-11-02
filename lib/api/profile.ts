@@ -1,5 +1,6 @@
 import { User } from "../auth";
 import { ApiErrorResponse, ApiHttpError, parseOrFallback } from "../http";
+import { Post, ProfileStatus, UserPostsResponse } from "../types";
 import { api } from "./client";
 
 export interface ProfileRequest {
@@ -8,6 +9,68 @@ export interface ProfileRequest {
   bio?: string;
   avatar?: File | null;
 }
+
+export const getProfileByUsername = async (username: string): Promise<User> => {
+  try {
+    const response = await api.get(`/api/profile/${username}`);
+    return response.data; // success
+  } catch (error: any) {
+    const data = error.response?.data;
+
+    if (error.response) {
+      if (data && typeof data.status === "number") {
+        throw new ApiHttpError(data);
+      }
+      throw new Error(`Request failed (${error.response.status})`);
+    }
+
+    throw new Error("Network error or server unreachable");
+  }
+};
+
+/**
+ * Fetch posts by user ID
+ */
+export const getPostsByUserId = async (
+  userId: number | string
+): Promise<UserPostsResponse> => {
+  try {
+    const response = await api.get(`/api/user/${userId}/posts`);
+    return response.data; // expected to return array of posts
+  } catch (error: any) {
+    const data = error.response?.data;
+
+    if (error.response) {
+      if (data && typeof data.status === "number") {
+        throw new ApiHttpError(data);
+      }
+      throw new Error(`Request failed (${error.response.status})`);
+    }
+
+    throw new Error("Network error or server unreachable");
+  }
+};
+
+/**
+ * Fetch profile status by user ID
+ */
+export const getProfileStatus = async (userId: number | string): Promise<ProfileStatus> => {
+  try {
+    const response = await api.get(`/api/profile/${userId}/stats`);
+    return response.data; // expected to return profile status object
+  } catch (error: any) {
+    const data = error.response?.data;
+
+    if (error.response) {
+      if (data && typeof data.status === "number") {
+        throw new ApiHttpError(data);
+      }
+      throw new Error(`Request failed (${error.response.status})`);
+    }
+
+    throw new Error("Network error or server unreachable");
+  }
+};
 
 export const updateProfile = async (data: ProfileRequest): Promise<User> => {
   const formData = new FormData();

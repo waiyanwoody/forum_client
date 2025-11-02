@@ -7,15 +7,25 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
-import type { User } from "@/lib/types"
 import { format } from "date-fns"
+import { User } from "@/lib/auth"
+import { getUserAvatar } from "@/lib/utils"
+import { ProfileStatus } from "@/lib/types"
 
 type UserProfileProps = {
-  user: User
+  user: User | null
+  isCurrentUser: boolean 
+  stats: ProfileStatus | null
 }
 
-export function UserProfile({ user }: UserProfileProps) {
+export function UserProfile({ user,isCurrentUser,stats }: UserProfileProps) {
   const [isFollowing, setIsFollowing] = useState(false)
+  const avatarUrl = getUserAvatar(user?.avatar_path);
+
+  if (user === null) {
+    return;
+  }
+
 
   return (
     <Card className="border-border bg-card">
@@ -23,40 +33,43 @@ export function UserProfile({ user }: UserProfileProps) {
         {/* Header */}
         <div className="flex flex-col sm:flex-row gap-6">
           <Avatar className="h-24 w-24 ring-4 ring-primary/10">
-            <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
-            <AvatarFallback className="text-2xl">{user.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+            <AvatarImage src={avatarUrl || "/placeholder.svg"} alt={user.fullname} />
+            <AvatarFallback className="text-2xl">{user.fullname.slice(0, 2).toUpperCase()}</AvatarFallback>
           </Avatar>
 
           <div className="flex-1 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
               <div>
-                <h1 className="text-2xl font-bold">{user.name}</h1>
+                <h1 className="text-2xl font-bold">{user.fullname}</h1>
                 <p className="text-muted-foreground">@{user.username}</p>
               </div>
 
               <div className="flex gap-2">
-                <Button
+                { !isCurrentUser ?  <Button
                   variant={isFollowing ? "outline" : "default"}
                   size="sm"
                   onClick={() => setIsFollowing(!isFollowing)}
                 >
                   {isFollowing ? "Following" : "Follow"}
-                </Button>
-                <Button variant="outline" size="sm" asChild>
+                </Button> : 
+                  <Button variant="outline" size="sm" asChild>
                   <Link href="/settings">
                     <Settings className="h-4 w-4" />
                   </Link>
                 </Button>
+                }
+               
+                
               </div>
             </div>
 
             {user.bio && <p className="text-sm text-pretty">{user.bio}</p>}
 
             <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-              {user.joinedAt && (
+              {user.created_at && (
                 <div className="flex items-center gap-1.5">
                   <Calendar className="h-4 w-4" />
-                  <span>Joined {format(new Date(user.joinedAt), "MMMM yyyy")}</span>
+                  <span>Joined {format(new Date(user.created_at), "MMMM yyyy")}</span>
                 </div>
               )}
             </div>
@@ -75,22 +88,22 @@ export function UserProfile({ user }: UserProfileProps) {
         </div>
 
         {/* Stats */}
-        {user.stats && (
+        {stats && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-border">
             <div className="text-center">
-              <div className="text-2xl font-bold text-primary">{user.stats.followingCount}</div>
+              <div className="text-2xl font-bold text-primary">{stats.followingCount}</div>
               <div className="text-xs text-muted-foreground">Following</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-primary">{user.stats.followerCount}</div>
+              <div className="text-2xl font-bold text-primary">{stats.followerCount}</div>
               <div className="text-xs text-muted-foreground">Followers</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-primary">{user.stats.postCount}</div>
+              <div className="text-2xl font-bold text-primary">{stats.postCount}</div>
               <div className="text-xs text-muted-foreground">Posts</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-primary">{user.stats.postLikeCount}</div>
+              <div className="text-2xl font-bold text-primary">{stats.postLikeCount}</div>
               <div className="text-xs text-muted-foreground">Post Likes</div>
             </div>
           </div>

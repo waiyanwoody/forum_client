@@ -5,18 +5,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
 import { PostCard } from "./post-card"
 import { MessageSquare, ThumbsUp, Bookmark } from "lucide-react"
-import type { Post, Comment } from "@/lib/types"
+import type { Post, Comment, UserPostsResponse } from "@/lib/types"
 import { format } from "date-fns"
+import { PostCardSummary } from "./post-card-summary"
 
 type UserActivityProps = {
-  posts: Post[]
+  userPosts: UserPostsResponse | null
   replies?: Comment[]
   likedPosts?: Post[]
   savedPosts?: Post[]
 }
 
-export function UserActivity({ posts, replies = [], likedPosts = [], savedPosts = [] }: UserActivityProps) {
+export function UserActivity({ userPosts, replies = [], likedPosts = [], savedPosts = [] }: UserActivityProps) {
   const [activeTab, setActiveTab] = useState("posts")
+  const author = userPosts?.author;
+  const posts = userPosts?.posts;
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -28,8 +31,8 @@ export function UserActivity({ posts, replies = [], likedPosts = [], savedPosts 
       </TabsList>
 
       <TabsContent value="posts" className="space-y-4">
-        {posts.length > 0 ? (
-          posts.map((post) => <PostCard key={post.id} post={post} />)
+        {posts && posts.length > 0 ? (
+          posts.map((post) => <PostCardSummary key={post.id} post={post} author={author} />)
         ) : (
           <div className="text-center py-12 text-muted-foreground">No posts yet</div>
         )}

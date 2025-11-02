@@ -10,13 +10,14 @@ import { formatDistanceToNow } from "date-fns"
 import { getUserAvatar } from "@/lib/utils"
 
 type PostCardProps = {
-  post: Post
+  post: PostSummary
+  author: UserSummary
 }
 
-export function PostCard({ post }: PostCardProps) {
+export function PostCardSummary({ post,author }: PostCardProps) {
 
   const timeAgo = formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })
-  const avatarUrl = getUserAvatar(post?.author.avatar_path);
+  const avatarUrl = getUserAvatar(author.avatar_path);
 
   return (
     <article className="group relative bg-card border border-border rounded-lg p-6 hover:border-primary/50 transition-all">
@@ -28,13 +29,13 @@ export function PostCard({ post }: PostCardProps) {
       )}
 
       <div className="flex gap-4">
-        {/* post?.Author Avatar */}
-        <Link href={`/u/${post?.author?.username}`} className="flex-shrink-0">
+        {/* Author Avatar */}
+        {/* <Link href={`/u/${author?.username}`} className="flex-shrink-0">
           <Avatar className="h-12 w-12 ring-2 ring-transparent group-hover:ring-primary/20 transition-all">
-            <AvatarImage src={avatarUrl || "/placeholder.svg"} alt={post?.author?.username} />
-            <AvatarFallback>{post?.author?.username.slice(0, 2).toUpperCase()}</AvatarFallback>
+            <AvatarImage src={avatarUrl || "/placeholder.svg"} alt={author?.username} />
+            <AvatarFallback>{author?.username.slice(0, 2).toUpperCase()}</AvatarFallback>
           </Avatar>
-        </Link>
+        </Link> */}
 
         {/* Content */}
         <div className="flex-1 min-w-0 space-y-3">
@@ -54,9 +55,9 @@ export function PostCard({ post }: PostCardProps) {
 
           {/* Meta Info */}
           <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-            <Link href={`/u/${post?.author?.username}`} className="font-medium hover:text-foreground transition-colors">
-              {post?.author?.username}
-            </Link>
+            {/* <Link href={`/u/${author?.username}`} className="font-medium hover:text-foreground transition-colors">
+              {author?.username}
+            </Link> */}
             <span className="flex items-center gap-1">
               <Clock className="h-3.5 w-3.5" />
               {timeAgo}
@@ -88,7 +89,7 @@ export function PostCard({ post }: PostCardProps) {
             className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
           >
             <MessageSquare className="h-4 w-4" />
-            <span className="text-sm font-medium">{post.replyCount}</span>
+            <span className="text-sm font-medium">{post.commentCount}</span>
           </Link>
         </div>
       </div>

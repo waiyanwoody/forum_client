@@ -1,19 +1,35 @@
 "use client"
 
 import { useState } from "react"
+
 import Link from "next/link"
-import { MessageSquare, MoreHorizontal, CheckCircle2 } from "lucide-react"
+
+import {
+  MessageSquare,
+  MoreHorizontal,
+  CheckCircle2,
+} from "lucide-react"
+
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
+
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+
 import { MarkdownRenderer } from "@/components/markdown-renderer"
 import { CommentForm } from "./comment-form"
+
 import type { Comment } from "@/lib/types"
+
+import {
+  useUpdateComment,
+  useDeleteComment,
+} from "@/hooks/use-comments"
+
 import { formatDistanceToNow } from "date-fns"
 
 type CommentCardProps = {
@@ -25,14 +41,28 @@ export function CommentCard({
   comment,
   depth = 0,
 }: CommentCardProps) {
+
   const [showReply, setShowReply] = useState(false)
 
+  // Edit state
+  const [isEditing, setIsEditing] = useState(false)
+  const [editContent, setEditContent] = useState(comment.content)
+
+  // React Query mutations
+  const updateMutation = useUpdateComment(comment.postId)
+  const deleteMutation = useDeleteComment(comment.postId)
+
   const timeAgo = comment.createdAt
-  ? formatDistanceToNow(
-      new Date(comment.createdAt.replace(/\.(\d{3})\d+$/, ".$1")),
-      { addSuffix: true }
-    )
-  : "Unknown date"
+    ? formatDistanceToNow(
+        new Date(
+          comment.createdAt.replace(
+            /\.(\d{3})\d+$/,
+            ".$1"
+          )
+        ),
+        { addSuffix: true }
+      )
+    : "Unknown date"
 
   // Create initials from author's fullname
   const initials =
@@ -43,6 +73,46 @@ export function CommentCard({
       ?.slice(0, 2)
       .toUpperCase() ||
     "U"
+
+  // Handle update
+  const handleUpdate = () => {
+    const content = editContent.trim()
+
+    if (!content) return
+
+    updateMutation.mutate(
+      {
+        id: comment.id,
+        payload: {
+          postId: comment.postId,
+          content,
+          parentCommentId: null,
+        },
+      },
+      {
+        onSuccess: () => {
+          setIsEditing(false)
+        },
+      }
+    )
+  }
+
+  // Handle delete
+  const handleDelete = () => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this comment?"
+    )
+
+    if (!confirmed) return
+
+    deleteMutation.mutate(comment.id)
+  }
+
+  // Cancel editing
+  const handleCancelEdit = () => {
+    setEditContent(comment.content)
+    setIsEditing(false)
+  }
 
   return (
     <div className="bg-card border border-border rounded-lg p-4 space-y-4">
@@ -88,6 +158,7 @@ export function CommentCard({
               variant="ghost"
               size="icon"
               className="h-8 w-8"
+              disabled={deleteMutation.isPending}
             >
               <MoreHorizontal className="h-4 w-4" />
             </Button>
@@ -100,7 +171,14 @@ export function CommentCard({
               Mark as Solution
             </DropdownMenuItem>
 
-            <DropdownMenuItem>
+            {/* Edit */}
+            <DropdownMenuItem
+              onClick={() => {
+                setEditContent(comment.content)
+                setIsEditing(true)
+              }}
+              disabled={updateMutation.isPending}
+            >
               Edit
             </DropdownMenuItem>
 
@@ -108,8 +186,15 @@ export function CommentCard({
               Report
             </DropdownMenuItem>
 
-            <DropdownMenuItem className="text-destructive">
-              Delete
+            {/* Delete */}
+            <DropdownMenuItem
+              className="text-destructive"
+              onClick={handleDelete}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending
+                ? "Deleting..."
+                : "Delete"}
             </DropdownMenuItem>
 
           </DropdownMenuContent>
@@ -117,31 +202,79 @@ export function CommentCard({
 
       </div>
 
-      {/* Comment content */}
-      <div className="prose prose-sm prose-slate dark:prose-invert max-w-none">
-        <MarkdownRenderer content={comment.content} />
-      </div>
+      {/* Comment content / Edit form */}
+      {isEditing ? (
+        <div className="space-y-3">
+
+          <textarea
+            value={editContent}
+            onChange={(e) =>
+              setEditContent(e.target.value)
+            }
+            className="w-full min-h-[100px] rounded-md border border-border bg-background p-3 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-primary"
+            placeholder="Edit your comment..."
+            disabled={updateMutation.isPending}
+          />
+
+          <div className="flex items-center gap-2">
+
+            {/* Save */}
+            <Button
+              size="sm"
+              onClick={handleUpdate}
+              disabled={
+                updateMutation.isPending ||
+                !editContent.trim()
+              }
+            >
+              {updateMutation.isPending
+                ? "Saving..."
+                : "Save"}
+            </Button>
+
+            {/* Cancel */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleCancelEdit}
+              disabled={updateMutation.isPending}
+            >
+              Cancel
+            </Button>
+
+          </div>
+
+        </div>
+      ) : (
+        <div className="prose prose-sm prose-slate dark:prose-invert max-w-none">
+          <MarkdownRenderer content={comment.content} />
+        </div>
+      )}
 
       {/* Actions */}
-      <div className="flex items-center gap-2">
+      {!isEditing && (
+        <div className="flex items-center gap-2">
 
-        <Button
-          variant="ghost"
-          size="sm"
-          className="gap-1.5 h-8"
-          onClick={() => setShowReply(!showReply)}
-        >
-          <MessageSquare className="h-3.5 w-3.5" />
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-1.5 h-8"
+            onClick={() =>
+              setShowReply(!showReply)
+            }
+          >
+            <MessageSquare className="h-3.5 w-3.5" />
 
-          <span className="text-xs">
-            Reply
-          </span>
-        </Button>
+            <span className="text-xs">
+              Reply
+            </span>
+          </Button>
 
-      </div>
+        </div>
+      )}
 
       {/* Reply form */}
-      {showReply && (
+      {showReply && !isEditing && (
         <div className="pt-4 border-t border-border">
 
           <CommentForm

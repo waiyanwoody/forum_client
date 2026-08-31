@@ -93,4 +93,43 @@ export const getCommentsByPostId = async (
   }
 };
 
+export const updateComment = async (
+  id: number,
+  payload: CreateCommentPayload
+): Promise<Comment> => {
+  try {
+    const response = await api.put(`/api/comments/${id}`, payload);
+    return response.data;
+  } catch (error: any) {
+    const data = error.response?.data;
+
+    if (error.response) {
+      if (data && typeof data.status === "number") {
+        throw new ApiHttpError(data);
+      }
+
+      throw new Error(`Request failed (${error.response.status})`);
+    }
+
+    throw new Error("Network error or server unreachable");
+  }
+};
+
+export const deleteComment = async (id: number): Promise<void> => {
+  try {
+    await api.delete(`/api/comments/${id}`);
+  } catch (error: any) {
+    const data = error.response?.data;
+
+    if (error.response) {
+      if (data && typeof data.status === "number") {
+        throw new ApiHttpError(data);
+      }
+
+      throw new Error(`Request failed (${error.response.status})`);
+    }
+
+    throw new Error("Network error or server unreachable");
+  }
+};
 

@@ -1,3 +1,4 @@
+import { Suspense } from "react"
 import { ResetPasswordForm } from "@/components/reset-password-form"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
@@ -22,7 +23,9 @@ export default function ResetPasswordPage() {
             </p>
           </div>
 
-          <ResetPasswordForm />
+          <Suspense>
+            <ResetPasswordForm />
+          </Suspense>
         </div>
       </div>
 

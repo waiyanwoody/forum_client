@@ -25,7 +25,7 @@ export default function EditThreadPage({ params }: EditThreadPageProps) {
             <ThreadForm
               initialData={{
                 title: post.title,
-                content: post.contentMD,
+                content: post.content,
                 tags: post.tags,
               }}
               isEditing

@@ -1,35 +1,59 @@
+"use client"
+
+import { use, useEffect, useState } from "react"
 import { AppShell } from "@/components/app-shell"
 import { ThreadDetail } from "@/components/thread-detail"
-import { CommentTree } from "@/components/comment-tree"
-import { CommentForm } from "@/components/comment-form"
+import { ThreadComments } from "@/components/thread-comments"
 import { ThreadSidebar } from "@/components/thread-sidebar"
-import { mockPosts, mockComments } from "@/lib/mock-data"
+import { getPostBySlug } from "@/lib/api/posts"
+import type { Post } from "@/lib/types"
 
 type ThreadPageProps = {
-  params: {
+  params: Promise<{
     slug: string
-  }
+  }>
 }
 
 export default function ThreadPage({ params }: ThreadPageProps) {
-  // In a real app, fetch the post by slug
-  const post = mockPosts[0]
+  const { slug } = use(params)
+
+  const [post, setPost] = useState<Post | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchPost = async () => {
+      try {
+        const data = await getPostBySlug(slug)
+        setPost(data)
+      } catch (err: any) {
+        setError(err.message || "Failed to load thread")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchPost()
+  }, [slug])
+
+  if (loading) {
+    return <div className="p-6">Loading thread...</div>
+  }
+
+  if (error || !post) {
+    return (
+      <div className="p-6 text-destructive">
+        {error || "Thread not found"}
+      </div>
+    )
+  }
 
   return (
     <AppShell sidebar={<ThreadSidebar post={post} />}>
       <div className="space-y-6">
         <ThreadDetail post={post} />
 
-        <div className="border-t border-border pt-6">
-          <h2 className="text-xl font-semibold mb-6">
-            {mockComments.length} {mockComments.length === 1 ? "Reply" : "Replies"}
-          </h2>
-
-          <div className="space-y-6">
-            <CommentForm />
-            <CommentTree comments={mockComments} />
-          </div>
-        </div>
+        <ThreadComments postId={post.id} />
       </div>
     </AppShell>
   )

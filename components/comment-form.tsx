@@ -1,26 +1,47 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Bold, Italic, Code, LinkIcon } from "lucide-react"
+import { useCreateComment } from "@/hooks/use-create-comment"
 
 type CommentFormProps = {
-  onCancel?: () => void
-  compact?: boolean
-}
+  postId: number;
+  parentCommentId?: number | null;
+  onCancel?: () => void;
+  compact?: boolean;
+};
 
-export function CommentForm({ onCancel, compact = false }: CommentFormProps) {
+export function CommentForm({
+  postId,
+  parentCommentId = null,
+  onCancel,
+  compact = false,
+}: CommentFormProps) {
   const [content, setContent] = useState("")
+  const createComment = useCreateComment()
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("[v0] Comment submitted:", content)
-    setContent("")
-    onCancel?.()
+
+    if (!content.trim()) return
+
+    createComment.mutate(
+      {
+        postId,
+        content: content.trim(),
+        parentCommentId,
+      },
+      {
+        onSuccess: () => {
+          setContent("")
+          onCancel?.()
+        },
+      }
+    )
   }
 
   return (
@@ -46,12 +67,15 @@ export function CommentForm({ onCancel, compact = false }: CommentFormProps) {
               <Button type="button" variant="ghost" size="icon" className="h-8 w-8">
                 <Bold className="h-4 w-4" />
               </Button>
+
               <Button type="button" variant="ghost" size="icon" className="h-8 w-8">
                 <Italic className="h-4 w-4" />
               </Button>
+
               <Button type="button" variant="ghost" size="icon" className="h-8 w-8">
                 <Code className="h-4 w-4" />
               </Button>
+
               <Button type="button" variant="ghost" size="icon" className="h-8 w-8">
                 <LinkIcon className="h-4 w-4" />
               </Button>
@@ -59,12 +83,26 @@ export function CommentForm({ onCancel, compact = false }: CommentFormProps) {
 
             <div className="flex items-center gap-2">
               {onCancel && (
-                <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={onCancel}
+                >
                   Cancel
                 </Button>
               )}
-              <Button type="submit" size="sm" disabled={!content.trim()}>
-                Post Reply
+
+              <Button
+                type="submit"
+                size="sm"
+                disabled={
+                  !content.trim() || createComment.isPending
+                }
+              >
+                {createComment.isPending
+                  ? "Posting..."
+                  : "Post Reply"}
               </Button>
             </div>
           </div>

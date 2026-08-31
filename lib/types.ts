@@ -1,21 +1,26 @@
 export type Post = {
-  id: string;
+  id: number;
   title: string;
-  slug: string;
-  excerpt: string;
-  contentMD: string;
+  content: string;
   tags: string[];
-  author: {
-    id: string;
-    username: string;
-    avatar_path: string;
-  };
+  slug: string;
   createdAt: string;
-  lastActivityAt: string;
+  author: {
+    id: number;
+    fullname: string;
+    username: string;
+    email?: string;
+    bio?: string;
+    avatar_path?: string;
+    role?: string;
+    created_at?: string;
+    email_verified?: boolean;
+    email_verified_at?: string;
+  };
   likeCount: number;
   liked: boolean;
-  commentCount: number;
-  isSaved: boolean;
+  commentCount?: number;
+  isSaved?: boolean;
   isPinned?: boolean;
   isSolved?: boolean;
 };
@@ -95,14 +100,14 @@ export interface PaginatedResponse<T> {
   empty: boolean;
 }
 
-export type Comment = {
-  id: string
-  author: User
-  contentMD: string
-  createdAt: string
-  likeCount: number
-  isLiked: boolean
-  children: Comment[]
+export type Comment {
+  id: number;
+  content: string;
+  authorUsername: string;
+  authorFullname: string;
+  postId: number;
+  createdAt: string;
+  replies: Comment[];
 }
 
 export type User = {
@@ -141,4 +146,44 @@ export type Notification = {
   createdAt: string
   read: boolean
   link: string
+}
+
+// export interface Comment {
+//   id: number;
+//   content: string;
+//   authorUsername: string;
+//   authorFullname: string;
+//   postId: number;
+//   createdAt: string;
+//   replies: Comment[];
+// }
+
+export interface CreateCommentPayload {
+  postId: number;
+  content: string;
+  parentCommentId?: number | null;
+}
+
+export type PostDetail = {
+  id: number
+  title: string
+  content: string
+  tags: string[]
+  slug: string
+  createdAt: string
+  author: {
+    id: number
+    fullname: string
+    username: string
+    email?: string
+    bio?: string
+    avatar_path?: string
+    role?: string
+    created_at?: string
+    email_verified?: boolean
+    email_verified_at?: string
+  }
+  likeCount: number
+  liked: boolean
+  replyCount: number
 }

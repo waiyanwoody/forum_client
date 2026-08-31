@@ -14,9 +14,13 @@ export function CommentTree({ comments, depth = 0 }: CommentTreeProps) {
       {comments.map((comment) => (
         <div key={comment.id}>
           <CommentCard comment={comment} depth={depth} />
-          {comment.children.length > 0 && (
+
+          {comment.replies?.length > 0 && (
             <div className="ml-8 mt-4 border-l-2 border-border pl-4">
-              <CommentTree comments={comment.children} depth={depth + 1} />
+              <CommentTree
+                comments={comment.replies ?? []}
+                depth={depth + 1}
+              />
             </div>
           )}
         </div>

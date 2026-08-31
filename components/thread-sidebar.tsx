@@ -56,11 +56,13 @@ export function ThreadSidebar({ post }: ThreadSidebarProps) {
             className="flex items-start gap-3 hover:opacity-80 transition-opacity"
           >
             <Avatar className="h-12 w-12">
-              <AvatarImage src={post.author.avatar || "/placeholder.svg"} />
-              <AvatarFallback>{post.author.name[0]}</AvatarFallback>
+              <AvatarImage src={post.author.avatar_path || "/placeholder.svg"} />
+              <AvatarFallback>
+  {(post.author.fullname || post.author.username || "?")[0].toUpperCase()}
+</AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <p className="font-semibold">{post.author.name}</p>
+              <p className="font-semibold">{post.author.fullname}</p>
               <p className="text-sm text-muted-foreground">@{post.author.username}</p>
               {post.author.bio && <p className="text-xs text-muted-foreground mt-2 text-pretty">{post.author.bio}</p>}
             </div>

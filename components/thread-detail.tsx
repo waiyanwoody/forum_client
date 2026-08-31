@@ -36,23 +36,27 @@ export function ThreadDetail({ post }: ThreadDetailProps) {
       <div className="flex items-start gap-4">
         <Link href={`/u/${post.author.username}`}>
           <Avatar className="h-12 w-12">
-            <AvatarImage src={post.author.avatar || "/placeholder.svg"} alt={post.author.name} />
-            <AvatarFallback>{post.author.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+            <AvatarImage src={post.author.avatar_path || "/placeholder.svg"} alt={post.author.fullname} />
+            <AvatarFallback>
+  {(post.author.fullname || post.author.username)
+    .slice(0, 2)
+    .toUpperCase()}
+</AvatarFallback>
           </Avatar>
         </Link>
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <Link href={`/u/${post.author.username}`} className="font-semibold hover:text-primary transition-colors">
-              {post.author.name}
+              {post.author.fullname}
             </Link>
             <span className="text-sm text-muted-foreground">@{post.author.username}</span>
-            {post.isSolved && (
+            {/* {post.isSolved && (
               <Badge variant="outline" className="gap-1 border-green-500/50 text-green-600 dark:text-green-400">
                 <CheckCircle2 className="h-3 w-3" />
                 Solved
               </Badge>
-            )}
+            )} */}
           </div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
             <Clock className="h-3.5 w-3.5" />
@@ -88,7 +92,7 @@ export function ThreadDetail({ post }: ThreadDetailProps) {
 
       {/* Content */}
       <div className="prose prose-slate dark:prose-invert max-w-none">
-        <MarkdownRenderer content={post.contentMD} />
+        <MarkdownRenderer content={post.content} />
       </div>
 
       {/* Actions */}

@@ -28,7 +28,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const token = getAuthToken()
       if (token) {
         try {
-          const userData = await getCurrentUser(token)
+          const userData = await getCurrentUser()
+          console.log("[AuthContext] User loaded:", userData)
           setUser(userData)
         } catch (error) {
           console.error("[v0] Failed to get user:", error)

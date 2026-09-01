@@ -68,6 +68,7 @@ export const getPostById = async (id: number): Promise<Post> => {
       createdAt: data.createdAt,
       likeCount: data.likeCount,
       liked: data.liked,
+      viewCount: data.viewCount ?? 0,
       commentCount: 0,
       isSaved: false,
     };
@@ -89,7 +90,12 @@ export const getPostById = async (id: number): Promise<Post> => {
 export const getPostBySlug = async (slug: string): Promise<Post> => {
   try {
     const response = await api.get(`/api/posts/slug/${slug}`);
-    return response.data;
+    const data = response.data;
+
+    return {
+      ...data,
+      viewCount: data.viewCount ?? 0,
+    };
   } catch (error: any) {
     const data = error.response?.data;
 

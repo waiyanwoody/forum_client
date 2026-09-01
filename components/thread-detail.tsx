@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { ThumbsUp, Bookmark, Share2, MoreHorizontal, CheckCircle2, Clock } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -10,20 +10,48 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { MarkdownRenderer } from "@/components/markdown-renderer"
 import type { Post } from "@/lib/types"
 import { formatDistanceToNow } from "date-fns"
+import { useToggleLike } from "@/hooks/use-likes"
 
 type ThreadDetailProps = {
   post: Post
+  onLikeChange?: (liked: boolean, countDelta: number) => void
 }
 
-export function ThreadDetail({ post }: ThreadDetailProps) {
-  const [isLiked, setIsLiked] = useState(false)
+export function ThreadDetail({ post, onLikeChange }: ThreadDetailProps) {
+  const [isLiked, setIsLiked] = useState(post.liked)
   const [isSaved, setIsSaved] = useState(post.isSaved)
   const [likeCount, setLikeCount] = useState(post.likeCount)
+  const likeMutation = useToggleLike()
   const timeAgo = formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })
 
+  useEffect(() => {
+    setIsLiked(post.liked)
+    setLikeCount(post.likeCount)
+  }, [post.liked, post.likeCount])
+
   const handleLike = () => {
-    setIsLiked(!isLiked)
-    setLikeCount((prev) => (isLiked ? prev - 1 : prev + 1))
+    if (likeMutation.isPending) return
+
+    const nextLiked = !isLiked
+
+    setIsLiked(nextLiked)
+    setLikeCount((currentCount) =>
+      Math.max(0, currentCount + (nextLiked ? 1 : -1))
+    )
+    onLikeChange?.(nextLiked, nextLiked ? 1 : -1)
+
+    likeMutation.mutate(
+      { targetType: "POST", targetId: post.id },
+      {
+        onError: () => {
+          setIsLiked(!nextLiked)
+          setLikeCount((currentCount) =>
+            Math.max(0, currentCount + (nextLiked ? -1 : 1))
+          )
+          onLikeChange?.(!nextLiked, nextLiked ? -1 : 1)
+        },
+      }
+    )
   }
 
   const handleSave = () => {
@@ -102,6 +130,7 @@ export function ThreadDetail({ post }: ThreadDetailProps) {
           size="sm"
           className="gap-2 transition-all active:scale-95"
           onClick={handleLike}
+          disabled={likeMutation.isPending}
         >
           <ThumbsUp
             className={`h-4 w-4 transition-transform ${isLiked ? "scale-110 animate-in zoom-in-50 duration-200" : ""}`}

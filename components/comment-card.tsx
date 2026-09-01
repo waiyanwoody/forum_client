@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 import Link from "next/link"
 
@@ -8,6 +8,7 @@ import {
   MessageSquare,
   MoreHorizontal,
   CheckCircle2,
+  ThumbsUp,
 } from "lucide-react"
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -30,6 +31,8 @@ import {
   useDeleteComment,
 } from "@/hooks/use-comments"
 
+import { useToggleLike } from "@/hooks/use-likes"
+
 import { formatDistanceToNow } from "date-fns"
 
 type CommentCardProps = {
@@ -41,8 +44,14 @@ export function CommentCard({
   comment,
   depth = 0,
 }: CommentCardProps) {
-
   const [showReply, setShowReply] = useState(false)
+  const [isLiked, setIsLiked] = useState(comment.liked)
+  const [likeCount, setLikeCount] = useState(comment.likeCount ?? 0)
+
+  useEffect(() => {
+    setIsLiked(comment.liked)
+    setLikeCount(comment.likeCount ?? 0)
+  }, [comment.liked, comment.likeCount])
 
   // Edit state
   const [isEditing, setIsEditing] = useState(false)
@@ -51,6 +60,7 @@ export function CommentCard({
   // React Query mutations
   const updateMutation = useUpdateComment(comment.postId)
   const deleteMutation = useDeleteComment(comment.postId)
+  const likeMutation = useToggleLike()
 
   const timeAgo = comment.createdAt
     ? formatDistanceToNow(
@@ -73,6 +83,33 @@ export function CommentCard({
       ?.slice(0, 2)
       .toUpperCase() ||
     "U"
+
+  // Handle like
+  const handleLike = () => {
+    if (likeMutation.isPending) return
+
+    const nextLiked = !isLiked
+
+    setIsLiked(nextLiked)
+    setLikeCount((currentCount) =>
+      Math.max(0, currentCount + (nextLiked ? 1 : -1))
+    )
+
+    likeMutation.mutate(
+      {
+        targetType: "COMMENT",
+        targetId: comment.id,
+      },
+      {
+        onError: () => {
+          setIsLiked(!nextLiked)
+          setLikeCount((currentCount) =>
+            Math.max(0, currentCount + (nextLiked ? -1 : 1))
+          )
+        },
+      }
+    )
+  }
 
   // Handle update
   const handleUpdate = () => {
@@ -116,10 +153,8 @@ export function CommentCard({
 
   return (
     <div className="bg-card border border-border rounded-lg p-4 space-y-4">
-
       {/* Header */}
       <div className="flex items-start gap-3">
-
         {/* Avatar */}
         <Link href={`/u/${comment.authorUsername}`}>
           <Avatar className="h-10 w-10">
@@ -132,7 +167,6 @@ export function CommentCard({
         {/* Author information */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-
             <Link
               href={`/u/${comment.authorUsername}`}
               className="font-semibold text-sm hover:text-primary transition-colors"
@@ -147,7 +181,6 @@ export function CommentCard({
             <span className="text-xs text-muted-foreground">
               {timeAgo}
             </span>
-
           </div>
         </div>
 
@@ -165,7 +198,7 @@ export function CommentCard({
           </DropdownMenuTrigger>
 
           <DropdownMenuContent align="end">
-
+            {/* Mark as solution */}
             <DropdownMenuItem>
               <CheckCircle2 className="h-4 w-4 mr-2" />
               Mark as Solution
@@ -182,6 +215,7 @@ export function CommentCard({
               Edit
             </DropdownMenuItem>
 
+            {/* Report */}
             <DropdownMenuItem>
               Report
             </DropdownMenuItem>
@@ -196,16 +230,13 @@ export function CommentCard({
                 ? "Deleting..."
                 : "Delete"}
             </DropdownMenuItem>
-
           </DropdownMenuContent>
         </DropdownMenu>
-
       </div>
 
       {/* Comment content / Edit form */}
       {isEditing ? (
         <div className="space-y-3">
-
           <textarea
             value={editContent}
             onChange={(e) =>
@@ -217,7 +248,6 @@ export function CommentCard({
           />
 
           <div className="flex items-center gap-2">
-
             {/* Save */}
             <Button
               size="sm"
@@ -241,9 +271,7 @@ export function CommentCard({
             >
               Cancel
             </Button>
-
           </div>
-
         </div>
       ) : (
         <div className="prose prose-sm prose-slate dark:prose-invert max-w-none">
@@ -254,7 +282,29 @@ export function CommentCard({
       {/* Actions */}
       {!isEditing && (
         <div className="flex items-center gap-2">
+          {/* Like */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleLike}
+            className={`gap-1.5 h-8 ${
+              isLiked
+                ? "text-primary"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <ThumbsUp
+              className={`h-3.5 w-3.5 ${
+                isLiked ? "fill-current" : ""
+              }`}
+            />
 
+            <span className="text-xs">
+              {likeCount}
+            </span>
+          </Button>
+
+          {/* Reply */}
           <Button
             variant="ghost"
             size="sm"
@@ -269,24 +319,20 @@ export function CommentCard({
               Reply
             </span>
           </Button>
-
         </div>
       )}
 
       {/* Reply form */}
       {showReply && !isEditing && (
         <div className="pt-4 border-t border-border">
-
           <CommentForm
             postId={comment.postId}
             parentCommentId={comment.id}
             onCancel={() => setShowReply(false)}
             compact
           />
-
         </div>
       )}
-
     </div>
   )
 }

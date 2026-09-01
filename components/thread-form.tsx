@@ -13,6 +13,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { X, Bold, Italic, Code, LinkIcon, ImageIcon, Eye, Edit } from "lucide-react"
 import { MarkdownRenderer } from "./markdown-renderer"
 import { useCreatePost } from "@/hooks/use-create-post"
+import { useAuth } from "@/contexts/auth-context"
 
 type ThreadFormProps = {
   initialData?: {
@@ -25,6 +26,10 @@ type ThreadFormProps = {
 
 export function ThreadForm({ initialData, isEditing = false }: ThreadFormProps) {
   const router = useRouter()
+  const { user } = useAuth()
+  const isVerified = !!user?.emailVerified
+  console.log("[ThreadForm] User data:", user)
+  console.log("[ThreadForm] Email verified:", isVerified)
   const [title, setTitle] = useState(initialData?.title || "")
   const [content, setContent] = useState(initialData?.content || "")
   const [tags, setTags] = useState<string[]>(initialData?.tags || [])
@@ -115,6 +120,12 @@ export function ThreadForm({ initialData, isEditing = false }: ThreadFormProps) 
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {!isVerified && (
+        <div className="rounded-lg border border-border bg-muted p-3 text-sm text-muted-foreground">
+          Please verify your email before publishing a thread. Check your inbox for the verification link.
+        </div>
+      )}
+
       {/* Title */}
       <div className="space-y-2">
         <Label htmlFor="title">Title</Label>
@@ -261,8 +272,19 @@ export function ThreadForm({ initialData, isEditing = false }: ThreadFormProps) 
         <Button type="button" variant="outline" onClick={() => router.back()}>
           Cancel
         </Button>
-        <Button type="submit" disabled={!title.trim() || !content.trim() || tags.length === 0 || createPost.isPending}>
-          {createPost.isPending ? "Creating..." : isEditing ? "Update Thread" : "Publish Thread"}
+        <Button
+          type="submit"
+          disabled={
+            !isVerified || !title.trim() || !content.trim() || tags.length === 0 || createPost.isPending
+          }
+        >
+          {!isVerified
+            ? "Verify your email to post"
+            : createPost.isPending
+            ? "Creating..."
+            : isEditing
+            ? "Update Thread"
+            : "Publish Thread"}
         </Button>
       </div>
     </form>

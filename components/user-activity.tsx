@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useQuery } from "@tanstack/react-query"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
 import { PostCard } from "./post-card"
@@ -8,18 +9,38 @@ import { MessageSquare, ThumbsUp, Bookmark } from "lucide-react"
 import type { Post, Comment, UserPostsResponse } from "@/lib/types"
 import { format } from "date-fns"
 import { PostCardSummary } from "./post-card-summary"
+import { getUserLikedPosts, getUserReplies, getUserSavedPosts } from "@/lib/api/activity"
 
 type UserActivityProps = {
   userPosts: UserPostsResponse | null
-  replies?: Comment[]
-  likedPosts?: Post[]
-  savedPosts?: Post[]
+  userId?: number | string
 }
 
-export function UserActivity({ userPosts, replies = [], likedPosts = [], savedPosts = [] }: UserActivityProps) {
+export function UserActivity({ userPosts, userId }: UserActivityProps) {
   const [activeTab, setActiveTab] = useState("posts")
   const author = userPosts?.author;
   const posts = userPosts?.posts;
+  const activityUserId = userId ?? author?.id;
+
+  const repliesQuery = useQuery({
+    queryKey: ["userReplies", activityUserId],
+    queryFn: () => getUserReplies(activityUserId!),
+    enabled: !!activityUserId && activeTab === "replies",
+  })
+  const likedPostsQuery = useQuery({
+    queryKey: ["userLikedPosts", activityUserId],
+    queryFn: () => getUserLikedPosts(activityUserId!),
+    enabled: !!activityUserId && activeTab === "likes",
+  })
+  const savedPostsQuery = useQuery({
+    queryKey: ["userSavedPosts", activityUserId],
+    queryFn: () => getUserSavedPosts(activityUserId!),
+    enabled: !!activityUserId && activeTab === "saved",
+  })
+
+  const replies = repliesQuery.data ?? []
+  const likedPosts = likedPostsQuery.data ?? []
+  const savedPosts = savedPostsQuery.data ?? []
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -31,7 +52,7 @@ export function UserActivity({ userPosts, replies = [], likedPosts = [], savedPo
       </TabsList>
 
       <TabsContent value="posts" className="space-y-4">
-        {posts && posts.length > 0 ? (
+        {posts && author && posts.length > 0 ? (
           posts.map((post) => <PostCardSummary key={post.id} post={post} author={author} />)
         ) : (
           <div className="text-center py-12 text-muted-foreground">No posts yet</div>
@@ -50,7 +71,7 @@ export function UserActivity({ userPosts, replies = [], likedPosts = [], savedPo
                       Replied {format(new Date(reply.createdAt), "MMM d, yyyy")}
                     </div>
                     <div className="prose prose-sm dark:prose-invert max-w-none">
-                      <p className="text-foreground">{reply.contentMD}</p>
+                      <p className="text-foreground">{reply.content}</p>
                     </div>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <div className="flex items-center gap-1">
@@ -69,7 +90,15 @@ export function UserActivity({ userPosts, replies = [], likedPosts = [], savedPo
       </TabsContent>
 
       <TabsContent value="likes" className="space-y-4">
-        {likedPosts.length > 0 ? (
+        {likedPostsQuery.isLoading ? (
+          <div className="text-center py-12 text-muted-foreground">Loading liked posts...</div>
+        ) : likedPostsQuery.isError ? (
+          <div className="text-center py-12 text-destructive">
+            {likedPostsQuery.error instanceof Error
+              ? likedPostsQuery.error.message
+              : "Failed to load liked posts"}
+          </div>
+        ) : likedPosts.length > 0 ? (
           likedPosts.map((post) => <PostCard key={post.id} post={post} />)
         ) : (
           <div className="text-center py-12 text-muted-foreground">No liked posts yet</div>

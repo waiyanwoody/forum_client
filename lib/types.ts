@@ -1,6 +1,7 @@
 export type Post = {
   id: number;
   title: string;
+  excerpt?: string;
   content: string;
   tags: string[];
   slug: string;
@@ -19,6 +20,7 @@ export type Post = {
   };
   likeCount: number;
   liked: boolean;
+  viewCount: number;
   commentCount?: number;
   isSaved?: boolean;
   isPinned?: boolean;
@@ -100,15 +102,7 @@ export interface PaginatedResponse<T> {
   empty: boolean;
 }
 
-export type Comment {
-  id: number;
-  content: string;
-  authorUsername: string;
-  authorFullname: string;
-  postId: number;
-  createdAt: string;
-  replies: Comment[];
-}
+
 
 export type User = {
   id: string
@@ -185,5 +179,26 @@ export type PostDetail = {
   }
   likeCount: number
   liked: boolean
+  viewCount: number
   replyCount: number
 }
+
+export type LikeTargetType = "POST" | "COMMENT";
+
+export type LikeRequest = {
+  targetType: LikeTargetType;
+  targetId: number;
+};
+
+export type Comment = {
+  id: number;
+  content: string;
+  authorUsername: string;
+  authorFullname: string;
+  postId: number;
+  createdAt: string;
+  replies: Comment[];
+
+  likeCount: number;
+  liked: boolean;
+};

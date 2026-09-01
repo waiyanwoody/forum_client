@@ -5,12 +5,21 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import type { Post } from "@/lib/types"
 import { format } from "date-fns"
+import { useQuery } from "@tanstack/react-query"
+import { getCommentsByPostId } from "@/lib/api/comments"
 
 type ThreadSidebarProps = {
   post: Post
 }
 
 export function ThreadSidebar({ post }: ThreadSidebarProps) {
+  const { data: comments } = useQuery({
+    queryKey: ["comments", post.id],
+    queryFn: () => getCommentsByPostId(post.id),
+  })
+
+  const replyCount = comments?.totalElements ?? post.commentCount ?? 0
+
   return (
     <div className="space-y-6">
       {/* Thread Stats */}
@@ -27,12 +36,12 @@ export function ThreadSidebar({ post }: ThreadSidebarProps) {
           <div className="flex items-center gap-3 text-sm">
             <MessageSquare className="h-4 w-4 text-muted-foreground" />
             <span className="text-muted-foreground">Replies</span>
-            <span className="ml-auto font-medium">{post.replyCount}</span>
+            <span className="ml-auto font-medium">{replyCount}</span>
           </div>
           <div className="flex items-center gap-3 text-sm">
             <Eye className="h-4 w-4 text-muted-foreground" />
             <span className="text-muted-foreground">Views</span>
-            <span className="ml-auto font-medium">1.2k</span>
+            <span className="ml-auto font-medium">{post.viewCount}</span>
           </div>
           <div className="flex items-center gap-3 text-sm">
             <Calendar className="h-4 w-4 text-muted-foreground" />

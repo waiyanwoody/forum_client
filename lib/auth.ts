@@ -10,8 +10,7 @@ export interface User {
   username: string;
   role?: string;
   created_at?: string;
-  email_verified?: boolean;
-  email_verified_at?: string;
+  emailVerified?: boolean;
   avatar_path?: string;
   bio?: string;
   reputation?: number;
@@ -135,7 +134,11 @@ export const getCurrentUser = async (): Promise<User> => {
     throw new Error(`Failed to fetch current user (${response.status})`);
   }
 
-  return (await response.json()) as User;
+  const userData = (await response.json()) as any;
+  return {
+    ...userData,
+    emailVerified: userData.email_verified ?? userData.emailVerified,
+  } as User;
 };
 
 // Fetch with authentication

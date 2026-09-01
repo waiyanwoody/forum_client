@@ -48,10 +48,22 @@ export default function ThreadPage({ params }: ThreadPageProps) {
     )
   }
 
+  const updatePostLike = (liked: boolean, countDelta: number) => {
+    setPost((currentPost) =>
+      currentPost
+        ? {
+            ...currentPost,
+            liked,
+            likeCount: Math.max(0, currentPost.likeCount + countDelta),
+          }
+        : currentPost
+    )
+  }
+
   return (
     <AppShell sidebar={<ThreadSidebar post={post} />}>
       <div className="space-y-6">
-        <ThreadDetail post={post} />
+        <ThreadDetail post={post} onLikeChange={updatePostLike} />
 
         <ThreadComments postId={post.id} />
       </div>

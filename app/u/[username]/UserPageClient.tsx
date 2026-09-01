@@ -4,12 +4,6 @@
 import { AppShell } from "@/components/app-shell";
 import { UserProfile } from "@/components/user-profile";
 import { UserActivity } from "@/components/user-activity";
-import {
-  mockPosts,
-  mockUserReplies,
-  mockLikedPosts,
-  mockSavedPosts,
-} from "@/lib/mock-data";
 import { useFetchProfile } from "@/hooks/use-fetch-profile";
 import { ProtectedRoute } from "@/components/protected-route";
 import { useAuth } from "@/contexts/auth-context";
@@ -27,12 +21,7 @@ export default function UserPageClient({ username }: { username: string }) {
       <AppShell showSidebar={false}>
         <div className="max-w-4xl mx-auto space-y-6">
           <UserProfile isCurrentUser={isCurrentUser()} user={profile} stats={status} />
-          <UserActivity
-            userPosts={userPosts}
-            replies={mockUserReplies}
-            likedPosts={mockLikedPosts}
-            savedPosts={mockSavedPosts}
-          />
+          <UserActivity userPosts={userPosts} userId={profile?.id} />
         </div>
       </AppShell>
     </ProtectedRoute>

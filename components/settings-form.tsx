@@ -263,7 +263,7 @@ export function SettingsForm() {
                   <Label htmlFor="current-email">Current Email</Label>
                   <div className="relative">
                   <Input id="current-email" type="email" value={email} disabled className="bg-muted border-border" />
-                  {user?.email_verified ? (
+                  {user?.emailVerified ? (
                     <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
                     <CheckCircle2 className="h-5 w-5 text-green-500" />
                     <span className="text-sm text-green-500">Verified</span>
